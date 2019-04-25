@@ -1,51 +1,40 @@
+#include<pthread.h>
 #include<stdio.h>
-#include<string.h>
+#include<semaphore.h>
+void *f1();
+void *f2();
+int shared=1;
+sem_t s;
 int main()
 {
-	char temp[10],p[10][10];
-	int n,pt[10],pr[10],wt[10],temp1,twt=0;
-	float awt;
-	printf("Enter no. of processes: ");
-	scanf("%d",&n);
-	for(int i=0;i<n;i++)
-	{
-		printf("Enter process %d name: ",i+1);
-		scanf("%s",&p[i]);
-		printf("Enter process %d time: ",i+1);
-		scanf("%d",&pt[i]);
-		printf("Enter process %d priority: ",i+1);
-		scanf("%d",&pr[i]);
-	}
-	for(int j=0;j<n-1;j++)
-	{
-		for(int k=j+1;k<n;k++)
-		{
-			if(pr[j]>pr[k])
-			{
-				temp1=pr[j];
-				pr[j]=pr[k];
-				pr[k]=temp1;
-				temp1=pt[j];
-				pt[j]=pt[k];
-				pt[k]=temp1;
-				strcpy(temp,p[j]);
-				strcpy(p[j],p[k]);
-				strcpy(p[k],temp);
-			}
-		}
-	}
-	wt[0]=0;
-	for(int l=1;l<n;l++)
-	{
-		wt[l]=wt[l-1]+pt[l-1];
-		twt=twt+wt[l];
-	}
-	awt=(float)twt/n;
-	printf("p_name\t\tp_time\t\tpriority\t\tw_time\n");
-	for(int m=0;m<n;m++)
-	{
-		printf("  %s\t\t  %d\t\t   %d\t\t\t  %d\n",p[m],pt[m],pr[m],wt[m]);
-	}
-	printf("total waiting time=%d\navg waiting time=%f",twt,awt);
-	return 0;
+pthread_t t1,t2;
+sem_init(&s,1,1);
+pthread_create(&t1,NULL,&f1,NULL);
+pthread_create(&t2,NULL,&f2,NULL);
+pthread_join(t1,NULL);
+printf("t1 is completed\n");
+pthread_join(t2,NULL);
+printf("t2 is completed\n");
+printf("%d\n",shared);
+return 0;
+}
+void *f1()
+{
+int a;
+sem_wait(&s);
+a=shared;
+a++;
+sleep(1);
+shared=a;
+sem_post(&s);
+}
+void *f2()
+{
+int b;
+sem_wait(&s);
+b=shared;
+b--;
+sleep(1);
+shared=b;
+sem_post(&s);
 }
