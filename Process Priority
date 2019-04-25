@@ -1,0 +1,40 @@
+#include<pthread.h>
+#include<stdio.h>
+#include<semaphore.h>
+void *f1();
+void *f2();
+int shared=1;
+sem_t s;
+int main()
+{
+pthread_t t1,t2;
+sem_init(&s,1,1);
+pthread_create(&t1,NULL,&f1,NULL);
+pthread_create(&t2,NULL,&f2,NULL);
+pthread_join(t1,NULL);
+printf("t1 is completed\n");
+pthread_join(t2,NULL);
+printf("t2 is completed\n");
+printf("%d\n",shared);
+return 0;
+}
+void *f1()
+{
+int a;
+sem_wait(&s);
+a=shared;
+a++;
+sleep(1);
+shared=a;
+sem_post(&s);
+}
+void *f2()
+{
+int b;
+sem_wait(&s);
+b=shared;
+b--;
+sleep(1);
+shared=b;
+sem_post(&s);
+}
